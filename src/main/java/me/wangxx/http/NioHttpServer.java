@@ -33,7 +33,7 @@ public class NioHttpServer implements Runnable {
 		// 1.init
 		NioHttpServer httpServer = new NioHttpServer(port);
 
-		//
+		// 2.start thread
 		new Thread(new Reader(), "reader").start();
 		new Thread(new Writer(), "writer").start();
 		new Thread(new Handler(),"handler").start();
@@ -103,17 +103,19 @@ public class NioHttpServer implements Runnable {
 	private void dealRegisterQueue() throws InterruptedException{
 		
 		while(!registerWriteQueue.isEmpty()){
-			SocketChannel channel = (SocketChannel) registerWriteQueue.take();
+			SelectionKey key = (SelectionKey) registerWriteQueue.take();
+			SocketChannel channel = (SocketChannel)key.channel();
 			try {
-				channel.register(selector,  SelectionKey.OP_WRITE);
+				channel.register(selector,  SelectionKey.OP_WRITE,key.attachment());
 			} catch (ClosedChannelException e) {
 				logger.error("dealRegisterQueue error",e);
 			}
 		}
 	}
 	
-	public static void addRegisterQueue(SocketChannel channel){
-		registerWriteQueue.offer(channel);
+	public static void addRegisterQueue(SelectionKey key){
+		// 注册"写"事件
+		registerWriteQueue.offer(key);
 		selector.wakeup();
 	}	
 
@@ -121,7 +123,7 @@ public class NioHttpServer implements Runnable {
 		SocketChannel socketChannel = serverChannel.accept();
 		socketChannel.configureBlocking(false);
 		
-		HttpRequest request = new HttpRequest(socketChannel);
+		HttpRequest request = new HttpRequest();
 		socketChannel.register(selector, SelectionKey.OP_READ,request);
 	}
 

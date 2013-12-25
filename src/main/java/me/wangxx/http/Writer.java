@@ -35,7 +35,8 @@ private static Logger logger = Logger.getLogger(Handler.class);
 		SocketChannel channel = (SocketChannel)key.channel();
 		
 		//1.write
-		byte[] data = new String("haha").getBytes();
+		HttpRequest request = (HttpRequest)key.attachment();
+		byte[] data = request.getBody();
 		ByteBuffer buffer = ByteBuffer.allocate(data.length);
         buffer.put(data, 0, data.length);
         buffer.flip();

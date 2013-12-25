@@ -47,6 +47,7 @@ public class Reader implements Runnable{
 		
 		HttpRequest request = (HttpRequest)key.attachment();
 		request.setBody(body);
+		request.setKey(key);
 		
 		//2.handle
 		Handler.addHandlerQueue(request);
