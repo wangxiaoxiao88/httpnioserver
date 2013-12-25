@@ -66,41 +66,42 @@ public class Handler implements Runnable{
 	public static final String LAST_MODIFIED = "Last-Modified";
 	public static final String GZIP = "gzip";
 	
-	private static byte[] buildResponseBody(RequestHeaderDecoder header) throws IOException{
-		File currentFile = new File("/Users/xiaoxiao/test" + header.getResource());
-		String mime = Util.getContentType(currentFile);
-		String acceptEncoding = header.getHeader(ACCEPT_ENCODING);
-		
-		ResponseHeaderEncoder encoder = new ResponseHeaderEncoder();
-
-		encoder.addHeader(CONNECTION, KEEP_ALIVE);
-		encoder.addHeader(CONTENT_TYPE, mime);
-
-		boolean zip = false;
-		byte[] body = Util.file2ByteArray(currentFile, zip);
-		encoder.addHeader(CONTENT_LENGTH, body.length+"");
-		if (zip) {
-			encoder.addHeader(CONTENT_ENCODING, GZIP);
+	private static byte[] buildResponseBody(RequestHeaderDecoder header) {
+		byte[] result  = null;
+		try{
+			File currentFile = new File(NioHttpServer.getRootPath() +  header.getResource());
+			String mime = Util.getContentType(currentFile);
+			String acceptEncoding = header.getHeader(ACCEPT_ENCODING);
+			
+			ResponseHeaderEncoder encoder = new ResponseHeaderEncoder();
+	
+			encoder.addHeader(CONNECTION, KEEP_ALIVE);
+			encoder.addHeader(CONTENT_TYPE, mime);
+	
+			boolean zip = false;
+			byte[] body = Util.file2ByteArray(currentFile, zip);
+			encoder.addHeader(CONTENT_LENGTH, body.length+"");
+			if (zip) {
+				encoder.addHeader(CONTENT_ENCODING, GZIP);
+			}
+	
+			DateFormat formater = new SimpleDateFormat(
+					"EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+			Date lastModified = new Date(currentFile.lastModified());
+			encoder.addHeader(LAST_MODIFIED,
+					formater.format(lastModified));
+	
+			// response header byte
+			byte[] head = encoder.getHeader();
+			
+			result = new byte[head.length + body.length];
+			System.arraycopy(head, 0, result, 0, head.length);
+			System.arraycopy(body, 0, result, head.length, body.length);
+		} catch (IOException e){
+			
+		} catch (Exception e){
+			
 		}
-
-		DateFormat formater = new SimpleDateFormat(
-				"EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-		Date lastModified = new Date(currentFile.lastModified());
-		encoder.addHeader(LAST_MODIFIED,
-				formater.format(lastModified));
-
-		// response header byte
-		byte[] head = encoder.getHeader();
-		
-		byte[] result = new byte[head.length + body.length];
-		System.arraycopy(head, 0, result, 0, head.length);
-		System.arraycopy(body, 0, result, head.length, body.length);
-		System.out.println("---------");
-		System.out.println(new String(head));
-		System.out.println("---------");
-		System.out.println(new String(body));
-		System.out.println("---------");
-		System.out.println(new String(result));
 		return result;
 	}
 	

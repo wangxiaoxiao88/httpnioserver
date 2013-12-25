@@ -44,7 +44,7 @@ private static Logger logger = Logger.getLogger(Handler.class);
         channel.write(buffer);
         
         //2.close
-        //close(channel);
+        close(channel);
 	}
 	
 	private static void close(SocketChannel channel){
@@ -60,7 +60,4 @@ private static Logger logger = Logger.getLogger(Handler.class);
 	public static void addWriterQueue(SelectionKey key){
 		queue.offer(key);
 	}
-	
-	
-
 }

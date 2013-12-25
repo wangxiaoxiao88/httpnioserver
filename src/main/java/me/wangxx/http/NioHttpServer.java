@@ -1,5 +1,6 @@
 package me.wangxx.http;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -29,6 +30,11 @@ public class NioHttpServer implements Runnable {
 		if (args.length > 0) {
 			port = Integer.parseInt(args[0]);
 		}
+		
+		root = new File(".").getAbsolutePath();
+		if(args.length > 1){
+			root = args[1];
+		}
 
 		// 1.init
 		NioHttpServer httpServer = new NioHttpServer(port);
@@ -39,7 +45,8 @@ public class NioHttpServer implements Runnable {
 		new Thread(new Handler(),"handler").start();
 		new Thread(httpServer, "selector").start();
 	}
-
+	
+	private static String root;
 	private static Selector selector;
 	private ServerSocketChannel serverChannel;
 	private static BlockingQueue registerWriteQueue = new LinkedBlockingQueue();
@@ -135,6 +142,10 @@ public class NioHttpServer implements Runnable {
 	private void write(SelectionKey key) throws IOException {
 		//触发写线程
 		Writer.addWriterQueue(key);
+	}
+	
+	public static String getRootPath(){
+		return root;
 	}
 
 }
