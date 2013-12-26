@@ -41,20 +41,9 @@ public class Reader implements Runnable{
 	private static void process(SelectionKey key) throws IOException{
 		
 		SocketChannel channel = (SocketChannel) key.channel();
-		
-		//1.read
-		byte[] body = read(channel);
-		
-		HttpRequest request = (HttpRequest)key.attachment();
-		request.setBody(body);
-		request.setKey(key);
-		
-		//2.handle
-		Handler.addHandlerQueue(request);
-	}
-	
-	private static byte[] read(SocketChannel channel) throws IOException{
-		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+        
+        //1.read
+        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 		
 		byte[] data = new byte[BUFFER_SIZE * 2];
 		int r = 0;
@@ -63,7 +52,7 @@ public class Reader implements Runnable{
 		while(true){
 			buffer.clear();
 			r = channel.read(buffer);
-			if(r  == -1 || r == 0) break;
+			if(r  <= 0) break;
 			if(r+offset > data.length){
 				data = growDouble(data);
 			}
@@ -71,10 +60,17 @@ public class Reader implements Runnable{
 			System.arraycopy(buf, 0, data, offset, r);
 			offset += r;
 		}
-		 byte[] req = new byte[offset];
-	     System.arraycopy(data, 0, req, 0, offset);
+		if(r == -1){
+			Util.close(channel);
+			return ;
+		}
 	     
-		return req;
+        HttpRequest request = (HttpRequest)key.attachment();
+        request.setBody(data);
+        request.setKey(key);
+        
+        //2.handle
+        Handler.addHandlerQueue(request);
 	}
 	
 	private static byte[] growDouble(byte[] buf){

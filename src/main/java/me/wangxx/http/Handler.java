@@ -2,6 +2,7 @@ package me.wangxx.http;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.SocketChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,7 +45,12 @@ public class Handler implements Runnable{
 		//1.parse http
 		byte[] buf = request.getBody();
 		RequestHeaderDecoder decoder = new RequestHeaderDecoder();
-		decoder.parseData(buf);
+		boolean ret = decoder.parseData(buf);
+		if(!ret){
+			Util.close((SocketChannel)request.getKey().channel());
+			logger.error("parse data error,close channel");
+			return;
+		}
 		
 		//2.build return result
 		byte[] body = buildResponseBody(decoder);

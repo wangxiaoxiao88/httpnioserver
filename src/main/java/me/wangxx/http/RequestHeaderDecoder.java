@@ -25,14 +25,16 @@ public class RequestHeaderDecoder {
 		return header.get(key);
 	}
 	
-	public void parseData(byte[] buf){
+	public boolean parseData(byte[] buf){
 		
 		//1.find
 		int beginIndex = Util.findSubArray(buf, GET, 0);
 		
 		if(beginIndex == -1){
+			System.out.println("----------------------------");
+			System.out.println(new String(buf));
 			logger.error("not found get index");
-			return;
+			return false;
 		}
 		
 		int endIndex = Util.findSubArray(buf, END, beginIndex);
@@ -41,6 +43,7 @@ public class RequestHeaderDecoder {
 		
 		//2.extrace
 		extractValue(buf);			
+		return true;
 	}
 	
 	private void extractValue(byte[] buf){
@@ -54,7 +57,9 @@ public class RequestHeaderDecoder {
 		
 		for(int i = 1;i<lines.length;i++){
 			String[] temp = lines[i].split(":");
-			header.put(temp[0].trim(), temp[1].trim());
+			if(temp.length == 2){
+				header.put(temp[0].trim(), temp[1].trim());
+			}
 		}
 	}
 	

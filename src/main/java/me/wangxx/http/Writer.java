@@ -44,18 +44,9 @@ private static Logger logger = Logger.getLogger(Handler.class);
         channel.write(buffer);
         
         //2.close
-        close(channel);
+        Util.close(channel);
 	}
 	
-	private static void close(SocketChannel channel){
-		try {
-			channel.finishConnect();
-			channel.socket().close();
-			channel.close();
-		} catch (IOException e) {
-			logger.error("error close",e);
-		}
-	}
 
 	public static void addWriterQueue(SelectionKey key){
 		queue.offer(key);

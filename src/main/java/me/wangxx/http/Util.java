@@ -9,15 +9,20 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
+
+import org.apache.log4j.Logger;
 
 
 public class Util {
 	
 	private static String defaultType = "application/octet-stream";
 	private static String mapFile = "mime.types";
+	
+	private static Logger logger = Logger.getLogger(Util.class);
 	
 	public static void closeQuietly(Closeable is) {
 		if (is != null) {
@@ -128,6 +133,16 @@ public class Util {
 			return baos.toByteArray();
 		} else {
 			return new byte[] {};
+		}
+	}
+	
+	public static void close(SocketChannel channel){
+		try {
+			channel.finishConnect();
+			channel.socket().close();
+			channel.close();
+		} catch (IOException e) {
+			logger.error("error close",e);
 		}
 	}
 
