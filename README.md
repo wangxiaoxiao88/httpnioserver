@@ -7,6 +7,6 @@ a java http nio project , bases on this project [nio-httpserver](https://github.
 
 ### how to run
 1. install maven
-3. `./script/run.sh 端口号 文件根路径`
+3. `sh ./script/run.sh 端口号 文件根路径`
 
 
